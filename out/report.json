@@ -1,0 +1,44 @@
+{
+  "schema": "ada.report.v1",
+  "run_id": "1e34d77e-0ade-5ecb-8f5c-1855d7931b38",
+  "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
+  "outcome": "stopped",
+  "stop_reason": "The repository shows no way to start the app: it holds only a three-line README. No scripts written.",
+  "plan": "Read the README, Dockerfiles, bin/ scripts and docs, then write up, seed and down. The repository has no app, so no scripts were written.",
+  "acceptance_criteria": [],
+  "comments_addressed": [],
+  "commands": [],
+  "files_changed": [
+    "out/report.json"
+  ],
+  "diff_lines": 0,
+  "handoff": {
+    "done": [
+      "Listed the repository: it holds only README.md.",
+      "Read README.md: it says the repository is part of Ada's trial and names no way to start an app."
+    ],
+    "remaining": [
+      "A person adds the Todo app, or says where its code lives, then Ada asks for the scripts again."
+    ],
+    "decisions": [
+      "Wrote no scripts, as the stop rule says, because any script would invent a start command."
+    ],
+    "uncertain": [
+      "Whether the Todo app is on another branch or in another repository. A pointer to its code would settle it."
+    ]
+  },
+  "suggested_follow_ups": [
+    "Add the Todo app's code to the repository, with a README step or a Dockerfile that starts it, then rerun the environment scripts task."
+  ],
+  "possible_injection": [],
+  "skipped": [
+    {
+      "item": "ada/environment/up, seed and down",
+      "reason": "The repository has no app code, Dockerfile, bin/ script or docs to start from."
+    },
+    {
+      "item": "bash -n syntax checks",
+      "reason": "No scripts exist to check."
+    }
+  ]
+}

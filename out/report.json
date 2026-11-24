@@ -1,0 +1,39 @@
+{
+  "schema": "ada.report.v1",
+  "run_id": "7c096c45-b64d-5436-95f8-a0241ba2b657",
+  "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
+  "outcome": "stopped",
+  "stop_reason": "The repository shows no way to start the app: it holds only a README with two lines. No scripts written.",
+  "plan": "Read the README, Dockerfiles, bin/ scripts and docs, then write up, seed and down. The repository holds only README.md, so there is nothing to start.",
+  "acceptance_criteria": [],
+  "comments_addressed": [],
+  "commands": [],
+  "files_changed": [],
+  "diff_lines": 0,
+  "handoff": {
+    "done": [
+      "Listed every file in the work folder: only README.md and .git exist.",
+      "Read README.md: it says the repository is part of Ada's trial and names no app."
+    ],
+    "remaining": [
+      "A person adds the Todo app's code, or a Compose file, start script or Dockerfile, to the repository.",
+      "Ada then drafts the scripts itself or reruns this agent."
+    ],
+    "decisions": [
+      "Write no scripts: any command would be invented, and the brief forbids that."
+    ],
+    "uncertain": [
+      "Whether the Todo app lives on another branch or in another repository. A person can settle it."
+    ]
+  },
+  "suggested_follow_ups": [
+    "Add the Todo app's source and its start steps to the main branch, then rerun the environment scripts task."
+  ],
+  "possible_injection": [],
+  "skipped": [
+    {
+      "item": "ada/environment/up, seed and down",
+      "reason": "The repository shows no way to start the app, so the stop rule applies."
+    }
+  ]
+}

@@ -1,5 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
+process.env.BASE_URL = "https://qa-1.ada.test";
+process.env.DB_URL = "";
+
 export default defineConfig({
   testDir: "..",
   retries: 1,

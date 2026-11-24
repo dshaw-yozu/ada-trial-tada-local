@@ -1,38 +1,117 @@
 {
   "schema": "ada.report.v1",
-  "run_id": "b1881220-105c-52b9-8da4-b3ac51a0dceb",
+  "run_id": "51a90ed1-2b63-5d49-be38-f888c0439a7d",
   "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
   "deliverable": { "id": "148d0c06-58b8-41b3-804b-6b86de69886c", "ref": "D-1", "version": 2 },
   "stage": "test_run",
   "outcome": "completed",
-  "plan": "Decide which tests earn a lasting place for D-1, run the existing e2e file on the QA app, and send the reports and out/regression.json.",
+  "plan": "Key changes, before and after: package.json scripts build, test and test:e2e (before: nothing builds or tests; after: tsc then vite build, vitest with v8 coverage, playwright against a preview server); src/App.tsx and src/main.tsx (before: no app; after: React draws an Ada trial heading into the root); playwright.config.ts (after: builds and previews the app on port 4173 and runs e2e in Chromium); .github/workflows/ci.yml and scripts/patch-coverage.mjs (after: CI runs unit, build and browser tests and posts a coverage/patch status from coverage/lcov.info). Run the existing tests, implement TC-1 to TC-5, add checks TC-6 to TC-12 for the review findings and the new commands, play the walkthrough, report.",
   "acceptance_criteria": [
-    { "id": "AC-1", "status": "met", "tests": ["e2e/app.spec.ts: the app shows its heading"] }
+    { "id": "AC-1", "status": "met", "tests": ["TC-1", "TC-2", "TC-3", "TC-4", "TC-5"] }
   ],
-  "comments_addressed": [],
+  "comments_addressed": [
+    "Callers entry 1: rewritten with the fields interface, caller, line, sends, handles, grade and basis",
+    "Callers entry 2: rewritten with the fields interface, caller, line, sends, handles, grade and basis",
+    "Callers entry 3: rewritten with the fields interface, caller, line, sends, handles, grade and basis",
+    "Callers entry 4: rewritten with the fields interface, caller, line, sends, handles, grade and basis"
+  ],
+  "callers": [
+    {
+      "interface": "npm test",
+      "caller": ".github/workflows/ci.yml",
+      "line": 26,
+      "sends": "no arguments",
+      "handles": "Exit status 0 with all tests passed, and a non-zero status when a test fails (TC-3, TC-11)",
+      "grade": "no_impact",
+      "basis": "run in a fresh copy"
+    },
+    {
+      "interface": "npm run test:e2e",
+      "caller": ".github/workflows/ci.yml",
+      "line": 30,
+      "sends": "no arguments, after the Build step at line 28 has already written dist",
+      "handles": "Exit status 0 with all tests passed, and a non-zero status when a test fails; the web server command builds the app a second time (TC-4, TC-7, TC-12)",
+      "grade": "degraded",
+      "basis": "run in a fresh copy"
+    },
+    {
+      "interface": "coverage/lcov.info written by npm test",
+      "caller": "scripts/patch-coverage.mjs",
+      "line": 35,
+      "sends": "reads SF lines as repository-relative paths and DA lines as line,hits",
+      "handles": "SF names src/App.tsx and src/main.tsx by repository path with hit DA lines, as the script expects (TC-10)",
+      "grade": "no_impact",
+      "basis": "run in a fresh copy"
+    },
+    {
+      "interface": "scripts/patch-coverage.mjs output and the coverage/patch commit status",
+      "caller": ".github/workflows/ci.yml",
+      "line": 64,
+      "sends": "the pull request base SHA, with GH_TOKEN holding statuses write in the same step",
+      "handles": "Reads the percent from the script's first line; on a fork pull request the gh api call at line 68 fails as the token is read-only, and the step runs the pull request's own copy of the script beside the token",
+      "grade": "degraded",
+      "basis": "read in code"
+    }
+  ],
   "commands": [
-    { "command": "npm ci", "exit": 0, "when": "before_change" },
-    { "command": "npx playwright install chromium", "exit": 0, "when": "before_change" },
+    { "command": "npm ci --no-audit --no-fund", "exit": 0, "when": "after_change", "label": "ad hoc", "output": "added 111 packages" },
+    { "command": "npx playwright install chromium", "exit": 0, "when": "after_change", "label": "ad hoc", "output": "Chrome Headless Shell 159.0.8154.6 downloaded" },
+    { "command": "curl -s https://qa-1.ada.test/", "exit": 0, "when": "after_change", "label": "ad hoc", "output": "Served index.html loads /assets/index-Dlz99EAX.js and holds an empty div id root" },
+    { "command": "npm test", "exit": 0, "when": "after_change", "label": "ad hoc", "output": "Test Files 1 passed (1), Tests 2 passed (2), coverage 100% lines" },
     { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "ada send out/playwright-report.json", "exit": 0, "when": "after_change" },
-    { "command": "ada send out/regression.json", "exit": 0, "when": "after_change" }
+    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/build-shows-react-page.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/unit/unit-tests-pass.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/browser-tests-pass.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/tc-2-react-typescript-sources.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/tc-5-type-error-stops-build.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/added-checks.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/walkthrough/d-1.spec.ts --project=head", "exit": 0, "when": "after_change" }
   ],
-  "files_changed": ["out/playwright.config.ts", "out/regression.json", "out/report.json"],
+  "files_changed": [
+    "out/playwright.config.ts",
+    "out/report.json",
+    "test/coverage/support/fresh-copy.ts",
+    "test/coverage/browser/build-shows-react-page.spec.ts",
+    "test/coverage/browser/browser-tests-pass.spec.ts",
+    "test/coverage/unit/unit-tests-pass.spec.ts"
+  ],
+  "existing_tests_changed": [],
   "diff_lines": 0,
   "handoff": {
     "done": [
-      "Installed packages and Chromium; ran e2e/app.spec.ts on the QA app: 1 of 1 passed",
-      "Sent the Playwright report and out/regression.json with decision nothing"
+      "Wrote the brief's Playwright config exactly; the folder's copy had two extra process.env lines",
+      "Ran the existing tests on the QA app: e2e/app.spec.ts 1 of 1 passed; npm test 2 of 2 passed",
+      "Rebuilt the coverage folder, which was missing: TC-1 and TC-4 under test/coverage/browser, TC-3 under test/coverage/unit, and their helper",
+      "TC-1, TC-2, TC-3, TC-4 and TC-5 pass on the head; every report is sent",
+      "Added checks TC-6 to TC-12 pass on the head; TC-6, TC-7 and TC-8 confirm three Code review findings",
+      "Played the walkthrough once and sent its report and video",
+      "Rewrote the four callers entries"
     ],
-    "remaining": ["The QA person reviews the run at the Test run gate."],
+    "remaining": [
+      "The QA person reviews the run at the Test run gate, including TC-2, which a person judges from the attached sources"
+    ],
     "decisions": [
-      "Nothing added: e2e/app.spec.ts already covers the heading; the other checks are one-off build and harness checks."
+      "Finding, low, confirmed with high confidence: the unit run prints An update to Root inside a test was not wrapped in act from the main entry test, whose React root is never unmounted (TC-6). Developers see it in verbose unit runs; the tests still pass.",
+      "Finding, low, confirmed with high confidence: after CI builds, the browser test command builds the app a second time (TC-7). It slows every CI run; results are correct.",
+      "Finding, medium, confirmed with high confidence: package.json does not list @testing-library/dom, so with npm legacy peer deps the unit run fails with Cannot find package (TC-8). A developer with that common npm setting cannot run the unit tests.",
+      "Finding, medium, unconfirmed and read in code: the coverage status step runs the pull request's own copy of scripts/patch-coverage.mjs beside a token that can write statuses, so a same-repository pull request could post any status. It cannot run here, as it needs GitHub Actions.",
+      "Finding, low, unconfirmed and read in code: on a fork pull request the coverage status job fails because its token is read-only. The lcov file that the status rests on comes from the pull request's own code. The actions are pinned to the movable v4 tag.",
+      "Finding, low, design gap: the project's Playwright config runs only the e2e folder, so the browser coverage tests in test/coverage/browser do not run in the project's own end-to-end checks; the app has one theme, and TC-1 checks phone and desktop widths itself.",
+      "Explained away: Playwright's request fixture times out on the QA app because it does not use the environment's proxy; the browser and curl reach the app, so TC-1 reads the served page through the browser."
     ],
     "uncertain": [
-      "run_id is the brief id, since the brief gives no separate run id."
+      "The ada.report.v1 schema was not in the work folder or on this host, so the callers entry fields follow the instructions' wording; a person may need to confirm them against the contract.",
+      "Whether the coverage status token risk at ci.yml line 64 rated medium should be fixed in this Deliverable or a later one is for the QA person to decide.",
+      "The work folder held out/report.json and out/regression.json from another run, and no test/coverage folder; out/regression.json is left as it was."
     ]
   },
-  "suggested_follow_ups": [],
+  "suggested_follow_ups": [
+    "Add @testing-library/dom to devDependencies in package.json",
+    "Unmount the React root in the main entry test's cleanup in src/App.test.tsx",
+    "Let the Playwright web server reuse the CI build, or drop the separate Build step in CI",
+    "Run the coverage status script from the base branch, not the pull request's checkout, and pin the actions to commit SHAs",
+    "Point the project's Playwright config at test/coverage/browser too, so the browser coverage tests run in the project's checks"
+  ],
   "possible_injection": [],
   "skipped": []
 }

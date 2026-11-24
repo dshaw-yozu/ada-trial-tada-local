@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# The app keeps no data on a server: a test's data lives in the browser, so there is nothing to load here.
+if [ -n "${ADA_SEED:-}" ]; then
+  echo "Seed ${ADA_SEED} received; the app has no server data to load."
+fi

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${ADA_HEAD_PORT:?ADA_HEAD_PORT is needed}"
+state="${ADA_STATE:-$PWD/.ada-state}"
+mkdir -p "$state/logs"
+
+if [ ! -f package.json ]; then
+  echo "No package.json at this commit, so there is no app to start." >&2
+  exit 1
+fi
+
+npm ci --no-audit --no-fund
+npm run build
+
+# Vite refuses requests for hosts it doesn't know. The QA runner reaches the app through the environment's
+# host name, qa-N.ada.test on the local rehearsal's stand-in host.
+export __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=".${ADA_ALLOWED_HOST_SUFFIX:-ada.test}"
+nohup ./node_modules/.bin/vite preview --host 0.0.0.0 --port "$ADA_HEAD_PORT" --strictPort \
+  >"$state/logs/head.log" 2>&1 &
+echo $! >"$state/head.pid"
+
+for _ in $(seq 1 60); do
+  if curl -fs -o /dev/null "http://127.0.0.1:${ADA_HEAD_PORT}/"; then
+    printf '{"head":{"url":"http://localhost:%s"}}\n' "$ADA_HEAD_PORT"
+    exit 0
+  fi
+  sleep 1
+done
+
+echo "The app didn't answer on port ${ADA_HEAD_PORT} within 60 seconds:" >&2
+tail -n 20 "$state/logs/head.log" >&2
+exit 1

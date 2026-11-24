@@ -1,155 +1,38 @@
 {
   "schema": "ada.report.v1",
-  "brief_id": "1111fec9-176d-5ccc-af8b-5d0b3d0fd25f",
-  "deliverable": { "ref": "D-1", "version": 2 },
+  "run_id": "b1881220-105c-52b9-8da4-b3ac51a0dceb",
+  "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
+  "deliverable": { "id": "148d0c06-58b8-41b3-804b-6b86de69886c", "ref": "D-1", "version": 2 },
   "stage": "test_run",
-  "role": "qa_runner",
   "outcome": "completed",
-  "stop_condition": null,
-  "tested_commit": "2f6526e53911c698d6a409d658ca377195b83f62",
-  "environment": "the QA environment qa-1, seed d-1-v2-a1, head app only",
-  "summary": "AC-1 is met. A fresh copy installed from the lockfile builds with Vite and the QA app serves the same bundle (index-Dlz99EAX.js), in which React draws the Ada trial heading (TC-1). The sources are TypeScript React components built by Vite (TC-2, with a person's reading still to do). The project's unit run passes 2 of 2 Vitest tests (TC-3) and its browser run passes 1 of 1 Playwright test in Chromium (TC-4). A type error stops the build with TS2322 (TC-5). No defect. Seven added checks pass; three of them prove low findings from Code review.",
-  "criteria": [
-    {
-      "id": "AC-1",
-      "status": "met",
-      "tests": ["TC-1", "TC-2", "TC-3", "TC-4", "TC-5"],
-      "note": "Every designed test passed on its last run. TC-2 also carries a manual step: a person reads src/App.tsx and src/main.tsx, attached to its result."
-    }
+  "plan": "Decide which tests earn a lasting place for D-1, run the existing e2e file on the QA app, and send the reports and out/regression.json.",
+  "acceptance_criteria": [
+    { "id": "AC-1", "status": "met", "tests": ["e2e/app.spec.ts: the app shows its heading"] }
   ],
-  "requirements": [
-    { "id": "R-13", "tests": ["TC-1", "TC-2", "TC-5", "TC-9"], "key_test": "TC-1", "coverage_path": "test/coverage/browser/build-and-open.spec.ts" },
-    { "id": "R-14", "tests": ["TC-3", "TC-6", "TC-8", "TC-10", "TC-11"], "key_test": "TC-3", "coverage_path": "test/coverage/unit/unit-tests-pass.spec.ts" },
-    { "id": "R-15", "tests": ["TC-4", "TC-7", "TC-12"], "key_test": "TC-4", "coverage_path": "test/coverage/browser/browser-tests-pass.spec.ts" }
+  "comments_addressed": [],
+  "commands": [
+    { "command": "npm ci", "exit": 0, "when": "before_change" },
+    { "command": "npx playwright install chromium", "exit": 0, "when": "before_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "ada send out/playwright-report.json", "exit": 0, "when": "after_change" },
+    { "command": "ada send out/regression.json", "exit": 0, "when": "after_change" }
   ],
-  "plan": {
-    "key_changes": [
-      { "change": "package.json, vite.config.ts, tsconfig files, index.html, src/main.tsx, src/App.tsx", "purpose": "a React and TypeScript app built by Vite", "before": "only a readme, nothing builds", "after": "npm run build type-checks and builds dist; the page shows the Ada trial heading drawn by React" },
-      { "change": "vitest.config.ts, src/test/setup.ts, src/App.test.tsx, npm test", "purpose": "a unit test harness with coverage", "before": "no unit tests", "after": "npm test runs 2 Vitest tests and writes coverage/lcov.info" },
-      { "change": "playwright.config.ts, e2e/app.spec.ts, npm run test:e2e", "purpose": "a browser test harness", "before": "no browser tests", "after": "npm run test:e2e builds, serves and runs 1 Playwright test in Chromium" },
-      { "change": ".github/workflows/ci.yml, scripts/patch-coverage.mjs", "purpose": "CI runs the harnesses and reports coverage of changed lines", "before": "no CI", "after": "CI runs unit tests, build and browser tests, and posts a coverage/patch status on pull requests" }
-    ]
-  },
-  "existing_tests": {
-    "run": [
-      { "test": "e2e/app.spec.ts: the app shows its heading", "how": "through out/playwright.config.ts on the head", "result": "passed" },
-      { "test": "src/App.test.tsx (2 tests)", "how": "npm test", "result": "2 passed" }
-    ],
-    "changed": [],
-    "note": "No existing test was changed, skipped or weakened."
-  },
-  "tests": [
-    { "ref": "TC-1", "implements": "TD-1", "file": "test/coverage/browser/build-and-open.spec.ts", "result": "passed" },
-    { "ref": "TC-2", "implements": "TD-2", "file": "out/run-once/tc-2-react-typescript-sources.spec.ts", "result": "passed", "manual": "A person reads the attached src/App.tsx and src/main.tsx and judges they are React components in TypeScript." },
-    { "ref": "TC-3", "implements": "TD-3", "file": "test/coverage/unit/unit-tests-pass.spec.ts", "result": "passed" },
-    { "ref": "TC-4", "implements": "TD-4", "file": "test/coverage/browser/browser-tests-pass.spec.ts", "result": "passed", "note": "Its first version failed twice on my own assertion (it looked for vite build in output Playwright's web server hides); the project's run had passed. Fixed and passed on the last run of the file." },
-    { "ref": "TC-6", "added": "Code review finding, src/App.test.tsx line 14", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-7", "added": "Code review finding, playwright.config.ts line 14", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-8", "added": "Code review finding, package.json line 21", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-9", "added": "exploratory: npm run dev is new", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-10", "added": "caller: scripts/patch-coverage.mjs reads coverage/lcov.info", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-11", "added": "negative: a failing unit test must fail the run", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-12", "added": "negative: a failing browser test must fail the run", "file": "out/run-once/added-checks.spec.ts", "result": "passed" },
-    { "ref": "TC-5", "implements": "TD-5", "file": "out/run-once/tc-5-type-error-stops-build.spec.ts", "result": "passed" },
-    { "ref": "walkthrough D-1", "file": "out/run-once/walkthrough/d-1.spec.ts", "result": "passed", "marks": ["AC-1 TC-1 0-4261"], "video": "video.webm, sent" }
-  ],
-  "defects": [],
-  "findings": [
-    {
-      "id": "F-1", "title": "The unit run warns that an update to Root was not wrapped in act", "grade": "low", "disposition": "confirmed", "confidence": "high", "test": "TC-6",
-      "who": "developers reading unit test output", "experience": "a React act warning from the main entry test whenever the run shows console output (verbose or JSON reporter); the default reporter hides it", "on_user_path": "yes, for anyone running Vitest verbose or with a JSON report",
-      "cause": "src/App.test.tsx main entry test mounts the app through main.tsx outside act and never unmounts that root (Code review, line 14)",
-      "confirmed_by": "ad hoc: 3 default runs printed 0 warnings, 3 JSON-reporter runs and 2 verbose runs each printed 1; TC-3's attached output shows it too"
-    },
-    {
-      "id": "F-2", "title": "The browser tests build the app again after CI has built it", "grade": "low", "disposition": "confirmed", "confidence": "high", "test": "TC-7",
-      "who": "developers waiting on CI", "experience": "every CI run builds and type-checks twice, so the browser step is slower", "on_user_path": "yes, every CI run",
-      "cause": "playwright.config.ts line 14 web server runs npm run build; ci.yml line 28 has already built",
-      "confirmed_by": "TC-7: dist/index.html is written again by npm run test:e2e after npm run build; read in code at ci.yml line 28"
-    },
-    {
-      "id": "F-3", "title": "The unit tests cannot load when packages are installed with npm's legacy peer setting", "grade": "low", "disposition": "confirmed", "confidence": "high", "test": "TC-8",
-      "who": "a developer or CI image with legacy-peer-deps set", "experience": "the unit run fails with Cannot find package @testing-library/dom and runs no tests", "on_user_path": "no for the default npm ci; yes where legacy-peer-deps is set",
-      "cause": "package.json does not list @testing-library/dom; the lockfile has it only as a peer (Code review, package.json line 21)",
-      "confirmed_by": "ad hoc probe and TC-8 both show Test Files 1 failed, Cannot find package @testing-library/dom"
-    },
-    {
-      "id": "F-4", "title": "The coverage status step runs the pull request's own script with a token that can write commit statuses", "grade": "medium", "disposition": "confirmed", "confidence": "medium",
-      "who": "repository owners relying on commit statuses", "experience": "a same-repository pull request could post any status, such as a passing required check", "on_user_path": "only for people with push access",
-      "cause": "ci.yml line 64 runs scripts/patch-coverage.mjs from the pull request checkout with GH_TOKEN (statuses: write) in its env; the comment at line 39 says the job runs nothing untrusted",
-      "confirmed_by": "read in code only: GitHub Actions cannot run in this environment. Note: on pull_request a same-repository author can also edit ci.yml itself, so this may add little over existing push access; the QA person decides"
-    },
-    {
-      "id": "F-5", "title": "The coverage status job fails on pull requests from forks", "grade": "low", "disposition": "unconfirmed", "confidence": "medium",
-      "who": "outside contributors", "experience": "a red coverage-status job even when coverage is fine", "on_user_path": "not today; every pull request comes from a branch in this repository",
-      "cause": "ci.yml line 68: fork pull requests get a read-only token, so gh api statuses fails", "confirmed_by": "read in code"
-    },
-    {
-      "id": "F-6", "title": "The coverage/patch status is reported by the change it measures", "grade": "low", "disposition": "confirmed", "confidence": "medium",
-      "who": "reviewers", "experience": "a pull request can supply any lcov, so the status is advice, not a control", "on_user_path": "yes, on every pull request",
-      "cause": "ci.yml line 36 uploads coverage/lcov.info from the job that runs the pull request's code", "confirmed_by": "read in code"
-    },
-    {
-      "id": "F-7", "title": "CI actions are pinned to the movable v4 tag", "grade": "low", "disposition": "confirmed", "confidence": "high",
-      "who": "repository owners", "experience": "a moved tag would run new action code next to a statuses: write token", "on_user_path": "yes, every CI run", "cause": "ci.yml line 15 and the coverage-status job", "confirmed_by": "read in code"
-    },
-    {
-      "id": "F-8", "title": "The coverage tests in test/coverage are not picked up by the project's own browser test layer", "grade": "low", "disposition": "confirmed", "confidence": "high",
-      "who": "the team keeping these coverage tests", "experience": "npm run test:e2e runs only e2e/, so TC-1, TC-3 and TC-4 run only under Ada's QA config", "on_user_path": "yes",
-      "cause": "playwright.config.ts testDir is ./e2e and tsconfig.node.json does not include test/; both are outside this run's paths", "confirmed_by": "read in code"
-    },
-    {
-      "id": "F-9", "title": "Two of my own test versions failed on their own assertions", "grade": "low", "disposition": "explained away", "confidence": "high",
-      "who": "nobody outside this run", "experience": "an earlier report of TC-4 and of the added checks file shows two failures each", "on_user_path": "no",
-      "cause": "TC-4 looked for vite build in output Playwright's web server hides; TC-6 expected the act warning from Vitest's default reporter, which hides passing tests' console output. Both fixed once at the cause; the last runs of both files pass", "confirmed_by": "the project's runs in those attachments passed with exit status 0; ad hoc reporter probe"
-    }
-  ],
-  "callers": [
-    { "interface": "npm ci, npm test, npm run build, npm run test:e2e", "caller": ".github/workflows/ci.yml lines 22-30", "sends": "no parameters", "handles_result": "exit status", "grade": "no impact", "evidence": "TC-1, TC-3, TC-4 and TC-7 run each command on a fresh copy" },
-    { "interface": "coverage/lcov.info", "caller": "scripts/patch-coverage.mjs lines 32-41 (SF and DA lines)", "sends": "reads repository-relative SF paths and DA hit counts", "handles_result": "yes", "grade": "no impact", "evidence": "TC-10 shows SF:src/App.tsx and SF:src/main.tsx with hit lines; its git diff part is read in code" },
-    { "interface": "coverage-status job writing the coverage/patch status", "caller": ".github/workflows/ci.yml line 68 (gh api statuses)", "sends": "state, context, description", "handles_result": "no failure handling", "grade": "degraded, read in code", "evidence": "fails on fork pull requests (F-5)" },
-    { "interface": "dist built by Vite", "caller": "ada/environment/up (vite preview)", "sends": "port and host", "handles_result": "yes", "grade": "no impact", "evidence": "the QA app serves the same bundle as the fresh build (TC-1)" }
-  ],
-  "ad_hoc": [
-    { "command": "curl -sS -i HEAD_URL/", "output": "HTTP/2 200; the page holds an empty div id root and script /assets/index-Dlz99EAX.js" },
-    { "command": "npm ci --legacy-peer-deps, then npm test, in a fresh copy", "output": "FAIL src/App.test.tsx; Error: Cannot find package '@testing-library/dom' imported from node_modules/@testing-library/jest-dom/dist/matchers-b01dabb1.mjs; Test Files 1 failed (1); exit 1" },
-    { "command": "npm test three times, npm test with a JSON reporter three times, vitest run --reporter=verbose twice, counting the act warning", "output": "default 0, 0, 0; JSON 1, 1, 1; verbose 1, 1" }
-  ],
-  "skipped": [],
-  "skipped_note": "The run skipped no designed test. TC-2's judgement that the sources are React in TypeScript is a manual step for a person. The CI workflow's behaviour on GitHub (F-4 to F-7) could not run here and is read in code only. No theme exists and the project's browser layer has one desktop project, so TC-1 checks desktop and phone widths itself.",
-  "possible_injection": [],
+  "files_changed": ["out/playwright.config.ts", "out/regression.json", "out/report.json"],
+  "diff_lines": 0,
   "handoff": {
     "done": [
-      "Existing tests pass on the head: e2e 1 of 1, Vitest 2 of 2",
-      "TC-1 to TC-5 pass; AC-1 met",
-      "Added checks TC-6 to TC-12 pass",
-      "Walkthrough D-1 played once, report and video sent"
+      "Installed packages and Chromium; ran e2e/app.spec.ts on the QA app: 1 of 1 passed",
+      "Sent the Playwright report and out/regression.json with decision nothing"
     ],
-    "remaining": [
-      "A person reads src/App.tsx and src/main.tsx for TC-2's manual step"
+    "remaining": ["The QA person reviews the run at the Test run gate."],
+    "decisions": [
+      "Nothing added: e2e/app.spec.ts already covers the heading; the other checks are one-off build and harness checks."
     ],
     "uncertain": [
-      "F-4, medium, security: whether the coverage status step running the pull request's script with a statuses write token needs a fix in this Deliverable; same-repository authors can already edit the workflow",
-      "F-8: whether the project's browser layer should run test/coverage; TC-4 would then need its own port, as it starts the project's run on port 4173",
-      "No ada.report.v1 schema file reached this run, so this report follows the shape the instructions describe"
-    ],
-    "decisions": [
-      "F-1 act warning from the main entry test: low, confirmed",
-      "F-2 browser tests rebuild after CI's build: low, confirmed",
-      "F-3 unit tests fail to load with legacy peer deps: low, confirmed",
-      "F-4 coverage step runs the pull request's script with a status-writing token: medium, confirmed in code, for the QA person",
-      "F-5 coverage status fails on fork pull requests: low, unconfirmed",
-      "F-6 coverage status is self-reported: low, confirmed in code",
-      "F-7 actions pinned to a movable tag: low, confirmed in code",
-      "F-8 coverage tests not in the project's browser layer: low, confirmed in code",
-      "F-9 two test faults of my own: explained away"
-    ],
-    "suggested_follow_ups": [
-      "Add @testing-library/dom to devDependencies",
-      "Unmount the root the main entry test mounts, or render inside act",
-      "Let the Playwright web server skip the build when dist exists in CI, or drop CI's separate build step",
-      "Run scripts/patch-coverage.mjs from the base branch in the coverage-status job, pin actions to commit SHAs, and treat coverage/patch as advice",
-      "Include test/coverage in the project's Playwright testDir and tsconfig"
+      "run_id is the brief id, since the brief gives no separate run id."
     ]
-  }
+  },
+  "suggested_follow_ups": [],
+  "possible_injection": [],
+  "skipped": []
 }

@@ -1,0 +1,20 @@
+{
+  "schema": "ada.regression.v1",
+  "decision": "nothing",
+  "reason": "No new test earns a lasting place. The existing e2e test already checks the one behaviour D-1 adds: the React page shows its heading. The other checks are one-off build and harness checks.",
+  "tests": [
+    {
+      "path": "e2e/app.spec.ts",
+      "title": "the app shows its heading",
+      "change": "kept",
+      "tags": [],
+      "reason": "It already proves the built React page shows the Ada trial heading, the key behaviour of D-1. It passes on the QA app."
+    }
+  ],
+  "blast_radius": [
+    {
+      "path": "e2e/app.spec.ts",
+      "reason": "The only project e2e file. It runs against the app that the change builds."
+    }
+  ]
+}

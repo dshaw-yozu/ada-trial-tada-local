@@ -1,6 +1,6 @@
 {
   "schema": "ada.report.v1",
-  "run_id": "79f81afd-4bce-5e3a-b2ec-86c5d3177e6a",
+  "run_id": "c84c00c0-0000-4000-8000-000000000000",
   "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
   "deliverable": {
     "id": "148d0c06-58b8-41b3-804b-6b86de69886c",
@@ -9,124 +9,34 @@
   },
   "stage": "test_run",
   "outcome": "completed",
-  "plan": "Key changes: (1) a Vite build of React and TypeScript sources, where before nothing could be built and after npm run build writes dist and the app page shows the Ada trial heading drawn by React; (2) a Vitest harness, where before there were no unit tests and after npm test runs them with coverage; (3) a Playwright harness, where before there were no browser tests and after npm run test:e2e builds, serves and tests the app in Chromium; (4) a CI workflow and patch coverage script. Run the existing e2e and unit tests, implement TC-1 to TC-5 from the design, add checks TC-6 to TC-12 for the Code review findings, the dev server, the coverage file and the harnesses' failure paths, then play the walkthrough.",
+  "plan": "Keep the project's e2e tests for D-1. Run the one existing e2e file on the QA app, decide whether any test earns a lasting place, and send the report.",
   "acceptance_criteria": [
     {
       "id": "AC-1",
       "status": "met",
-      "tests": ["TC-1", "TC-2", "TC-3", "TC-4", "TC-5"]
+      "tests": ["e2e/app.spec.ts"]
     }
   ],
   "comments_addressed": [],
   "commands": [
-    { "command": "npm ci --no-audit --no-fund", "exit": 0, "when": "after_change" },
+    { "command": "npm ci", "exit": 0, "when": "after_change" },
     { "command": "npx playwright install chromium", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change", "output": "1 passed: the app shows its heading" },
-    { "command": "npm test (ad hoc)", "exit": 0, "when": "after_change", "output": "Test Files 1 passed (1); Tests 2 passed (2); coverage 100 percent of lines in src/App.tsx and src/main.tsx" },
-    { "command": "curl -s https://qa-1.ada.test/ (ad hoc)", "exit": 0, "when": "after_change", "output": "200; index.html with an empty div id root and script /assets/index-Dlz99EAX.js, the same bundle name that a fresh build writes" },
-    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/tc-1-build-shows-react-page.spec.ts test/coverage/unit/tc-3-vitest-unit-tests-pass.spec.ts test/coverage/browser/tc-4-playwright-browser-tests-pass.spec.ts --project=head", "exit": 0, "when": "after_change", "output": "3 passed" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/tc-2-react-typescript-sources.spec.ts out/run-once/tc-5-type-error-stops-build.spec.ts --project=head", "exit": 0, "when": "after_change", "output": "2 passed" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/added-checks.spec.ts --project=head", "exit": 0, "when": "after_change", "output": "7 passed" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/walkthrough/d-1.spec.ts --project=head", "exit": 0, "when": "after_change", "output": "1 passed" }
+    { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "ada send out/playwright-report.json", "exit": 0, "when": "after_change" }
   ],
-  "files_changed": [
-    "out/playwright.config.ts",
-    "test/coverage/support/fresh-copy.ts",
-    "test/coverage/browser/tc-1-build-shows-react-page.spec.ts",
-    "test/coverage/unit/tc-3-vitest-unit-tests-pass.spec.ts",
-    "test/coverage/browser/tc-4-playwright-browser-tests-pass.spec.ts",
-    "out/report.json"
-  ],
-  "diff_lines": 230,
-  "callers": [
-    {
-      "caller": "scripts/patch-coverage.mjs:35",
-      "interface": "coverage/lcov.info written by npm test",
-      "grade": "no_impact",
-      "checked": "running_app",
-      "detail": "Reads SF and DA lines by repository path; TC-10 shows npm test writes SF:src/App.tsx and SF:src/main.tsx with hit lines."
-    },
-    {
-      "caller": ".github/workflows/ci.yml:26",
-      "interface": "npm test script",
-      "grade": "no_impact",
-      "checked": "running_app",
-      "detail": "Runs the unit tests; TC-3 shows the command exits zero in a fresh copy, TC-11 that a failing test makes it fail."
-    },
-    {
-      "caller": ".github/workflows/ci.yml:28",
-      "interface": "npm run build script",
-      "grade": "no_impact",
-      "checked": "running_app",
-      "detail": "TC-1 shows the build passes in a fresh copy; TC-5 that a type error stops it."
-    },
-    {
-      "caller": ".github/workflows/ci.yml:30",
-      "interface": "npm run test:e2e script and playwright.config.ts",
-      "grade": "degraded",
-      "checked": "running_app",
-      "detail": "Passes (TC-4), but the web server command builds again after the Build step, so CI builds twice (TC-7)."
-    },
-    {
-      "caller": ".github/workflows/ci.yml:64",
-      "interface": "scripts/patch-coverage.mjs and the coverage/patch commit status",
-      "grade": "unknown",
-      "checked": "read_in_code",
-      "detail": "Runs the pull request's own script next to a token that can write statuses; on a fork pull request the token is read-only and the status call fails. Not runnable in the QA environment."
-    },
-    {
-      "caller": "ada/environment/up:14",
-      "interface": "npm run build and vite preview",
-      "grade": "no_impact",
-      "checked": "running_app",
-      "detail": "The QA app answers 200 and serves the bundle a fresh build writes."
-    },
-    {
-      "caller": "index.html:10",
-      "interface": "src/main.tsx entry",
-      "grade": "no_impact",
-      "checked": "running_app",
-      "detail": "TC-1 and TC-9 show React draws the heading into the root from this entry."
-    }
-  ],
+  "files_changed": ["out/playwright.config.ts", "out/regression.json", "out/report.json"],
+  "diff_lines": 0,
   "handoff": {
     "done": [
-      "Wrote the brief's Playwright config to out/playwright.config.ts exactly, replacing an earlier copy that also set BASE_URL and DB_URL environment values",
-      "Installed packages from the lockfile and Chromium",
-      "Existing tests: e2e/app.spec.ts passes on the QA app, npm test passes 2 of 2",
-      "TC-1, TC-3, TC-4 coverage tests written again in test/coverage with their helper, all pass",
-      "TC-2 and TC-5 pass",
-      "Added checks TC-6 to TC-12 pass",
-      "Walkthrough D-1 played once and passed, report and video sent"
+      "Wrote the brief's Playwright config",
+      "Ran e2e/app.spec.ts on the QA app: 1 passed, report sent",
+      "Decided nothing: the existing heading test is kept unchanged"
     ],
-    "remaining": [
-      "The QA person reviews the run at the Test run gate"
-    ],
-    "decisions": [
-      "F1 low, confirmed, high confidence: the main entry unit test leaves its React root mounted and the unit run prints an act warning (TC-6). Developers running verbose unit tests notice; not a user path.",
-      "F2 low, confirmed, high confidence: npm run test:e2e builds the app again after CI has built it, so CI builds twice (TC-7). CI time only.",
-      "F3 low, confirmed, high confidence: package.json does not list @testing-library/dom; installed without peer dependencies the unit tests cannot load (TC-8). Developers with legacy peer settings notice.",
-      "F4 medium, unconfirmed, read in code: the CI coverage step runs the pull request's own script with a token that can write commit statuses, so a person with push access could post any status. Cannot be run in the QA environment.",
-      "F5 low, unconfirmed, read in code: on a fork pull request the coverage status job fails because its token is read-only.",
-      "F6 low, unconfirmed, read in code: the coverage/patch status is computed from coverage the pull request itself produced, so it is advice, not a control.",
-      "F7 low, unconfirmed, read in code: the GitHub actions are pinned to the movable v4 tag.",
-      "F8 low, confirmed by reading .gitignore: the pattern coverage/ has no leading slash, so it also matches test/coverage/ and plain git add skips the kept coverage tests.",
-      "F9 low, design gap: the project's browser tests run in one Desktop Chrome project and the app has no themes, so the browser coverage tests run at one width and one theme only.",
-      "TC-4 failed twice on its first run because my own pattern expected app.spec.ts without its e2e folder; the project's run itself passed. Explained away as a test fault, fixed, and the whole file ran again and passed."
-    ],
-    "uncertain": [
-      "F4: whether the CI coverage step should run the script from the base branch instead of the pull request; a security decision for the QA person",
-      "F8: whether Ada commits test/coverage despite the coverage/ ignore pattern; if not, the kept coverage tests are lost",
-      "run_id is set to the brief id, as the run id was not given"
-    ]
+    "remaining": ["The QA person reviews the run at the Test run gate"],
+    "decisions": ["Add no test: the heading test already covers the key D-1 behaviour; the rest are one-off build checks"],
+    "uncertain": ["run_id is a placeholder, as the run id was not given"]
   },
-  "suggested_follow_ups": [
-    "Run scripts/patch-coverage.mjs from the base branch checkout in the coverage-status job, or drop statuses write from the step that runs pull request code",
-    "Change the .gitignore pattern coverage/ to /coverage/ so test/coverage is kept",
-    "Declare @testing-library/dom in devDependencies",
-    "Unmount the React root in the main entry test's cleanup",
-    "Let CI skip the second build, for example reuse the dist that the Build step wrote"
-  ],
+  "suggested_follow_ups": [],
   "possible_injection": [],
   "skipped": []
 }

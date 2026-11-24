@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state="${ADA_STATE:-$PWD/.ada-state}"
+pidfile="$state/head.pid"
+
+if [ -f "$pidfile" ]; then
+  pid="$(cat "$pidfile")"
+  if kill -0 "$pid" 2>/dev/null; then
+    pkill -TERM -P "$pid" 2>/dev/null || true
+    kill -TERM "$pid" 2>/dev/null || true
+    for _ in $(seq 1 10); do
+      kill -0 "$pid" 2>/dev/null || break
+      sleep 1
+    done
+    pkill -KILL -P "$pid" 2>/dev/null || true
+    kill -KILL "$pid" 2>/dev/null || true
+  fi
+  rm -f "$pidfile"
+fi

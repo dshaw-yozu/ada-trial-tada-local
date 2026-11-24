@@ -1,6 +1,5 @@
 {
   "schema": "ada.report.v1",
-  "run_id": "c84c00c0-0000-4000-8000-000000000000",
   "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
   "deliverable": {
     "id": "148d0c06-58b8-41b3-804b-6b86de69886c",
@@ -9,34 +8,93 @@
   },
   "stage": "test_run",
   "outcome": "completed",
-  "plan": "Keep the project's e2e tests for D-1. Run the one existing e2e file on the QA app, decide whether any test earns a lasting place, and send the report.",
+  "plan": "Key change: a new React, TypeScript and Vite codebase. Before, the repository held only a readme and nothing built or tested. After, npm run build type-checks and builds the app, the built page shows the Ada trial heading that React draws, npm test runs Vitest with coverage, and npm run test:e2e builds, serves and tests the app in Chromium. Closed the run check's 3 gaps by writing again the key tests TC-1, TC-3 and TC-4 and their helper under test/coverage, which were missing from the work folder. Ran the existing tests first, then TC-1 to TC-5, then the added checks TC-6 to TC-12, then the walkthrough.",
   "acceptance_criteria": [
     {
       "id": "AC-1",
       "status": "met",
-      "tests": ["e2e/app.spec.ts"]
+      "tests": ["TC-1", "TC-2", "TC-3", "TC-4", "TC-5"],
+      "note": "TC-1, TC-3, TC-4 and TC-5 passed on the head. TC-2 passed its machine checks and is also marked for a person to read the attached sources. TC-6 to TC-12 add support."
     }
   ],
-  "comments_addressed": [],
-  "commands": [
-    { "command": "npm ci", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright install chromium", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "ada send out/playwright-report.json", "exit": 0, "when": "after_change" }
+  "comments_addressed": [
+    "TD-1 has no test case: implemented as TC-1 in test/coverage/browser/tc-1-build-shows-react-page.spec.ts, passed, report sent",
+    "TD-3 has no test case: implemented as TC-3 in test/coverage/unit/tc-3-vitest-unit-tests-pass.spec.ts, passed, report sent",
+    "TD-4 has no test case: implemented as TC-4 in test/coverage/browser/tc-4-playwright-browser-tests-pass.spec.ts, passed, report sent"
   ],
-  "files_changed": ["out/playwright.config.ts", "out/regression.json", "out/report.json"],
-  "diff_lines": 0,
+  "tests": [
+    { "ref": "TC-1", "design": "TD-1", "file": "test/coverage/browser/tc-1-build-shows-react-page.spec.ts", "result": "passed", "proof": "A fresh copy builds with Vite into assets/index-Dlz99EAX.js. The QA app serves that same bundle, and React draws the Ada trial heading into the empty root at desktop and phone width, with no console error. Both end screenshots were checked by eye." },
+    { "ref": "TC-2", "design": "TD-2", "file": "out/run-once/tc-2-react-typescript-sources.spec.ts", "result": "passed", "manual": "A person reads the attached src/App.tsx and src/main.tsx and judges that they are React components in TypeScript." },
+    { "ref": "TC-3", "design": "TD-3", "file": "test/coverage/unit/tc-3-vitest-unit-tests-pass.spec.ts", "result": "passed", "proof": "npm test on a fresh copy: Tests 2 passed (2), exit status zero." },
+    { "ref": "TC-4", "design": "TD-4", "file": "test/coverage/browser/tc-4-playwright-browser-tests-pass.spec.ts", "result": "passed", "proof": "npm run test:e2e on a fresh copy: chromium e2e/app.spec.ts the app shows its heading, 1 passed, exit status zero.", "note": "Its first runs failed twice on my own pattern, which expected app.spec.ts where Playwright prints e2e/app.spec.ts. That is a test fault, not an app defect. I fixed the pattern, ran the whole file again and it passed." },
+    { "ref": "TC-5", "design": "TD-5", "file": "out/run-once/tc-5-type-error-stops-build.spec.ts", "result": "passed", "proof": "A number passed where text is expected stops npm run build with error TS2322 in src/App.tsx, and no dist is written." },
+    { "ref": "TC-6", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "Code review finding src/App.test.tsx line 14" },
+    { "ref": "TC-7", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "Code review finding playwright.config.ts line 14" },
+    { "ref": "TC-8", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "Code review finding package.json line 21" },
+    { "ref": "TC-9", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "exploratory: npm run dev" },
+    { "ref": "TC-10", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "caller: scripts/patch-coverage.mjs reads coverage/lcov.info" },
+    { "ref": "TC-11", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "negative: a failing unit test fails the unit run" },
+    { "ref": "TC-12", "file": "out/run-once/added-checks.spec.ts", "result": "passed", "added": "negative: a failing browser test fails the browser run" },
+    { "ref": "walkthrough D-1", "file": "out/run-once/walkthrough/d-1.spec.ts", "result": "passed", "note": "Played once, last. Its report and video.webm were sent. Mark AC-1 TC-1." }
+  ],
+  "existing_tests": [
+    { "file": "e2e/app.spec.ts", "result": "passed on the head through the brief config, report sent", "changed": false },
+    { "file": "src/App.test.tsx", "result": "ad hoc: npx vitest run src/App.test.tsx gave Test Files 1 passed (1), Tests 2 passed (2)", "changed": false }
+  ],
+  "callers": [
+    "scripts/patch-coverage.mjs, read through .github/workflows/ci.yml line 64. It reads coverage/lcov.info, which npm test writes with repository-relative SF paths for src/App.tsx and src/main.tsx. Grade: no impact, proved by TC-10.",
+    "No other caller: this Deliverable creates the codebase, and the brief names no other codebase."
+  ],
+  "commands": [
+    { "command": "curl -sS -m 20 $HEAD_URL/", "label": "ad hoc", "exit": 0, "output": "The QA app returned index.html titled Ada trial, with an empty root div and script /assets/index-Dlz99EAX.js" },
+    { "command": "npm ci --no-audit --no-fund", "exit": 0 },
+    { "command": "npx playwright install chromium", "exit": 0 },
+    { "command": "npx vitest run src/App.test.tsx", "label": "ad hoc", "exit": 0, "output": "Test Files 1 passed (1), Tests 2 passed (2)" },
+    { "command": "cat -n .github/workflows/ci.yml (lines 30 to 75)", "label": "ad hoc", "exit": 0, "output": "Line 57 sets GH_TOKEN to github.token in the env of the step whose line 64 runs node scripts/patch-coverage.mjs from the checkout, in a job with statuses: write" },
+    { "command": "npx playwright test --config=out/playwright.config.ts <each file> --project=head", "exit": 0 }
+  ],
+  "files_changed": [
+    "out/playwright.config.ts",
+    "test/coverage/support/fresh-copy.ts",
+    "test/coverage/browser/tc-1-build-shows-react-page.spec.ts",
+    "test/coverage/browser/tc-4-playwright-browser-tests-pass.spec.ts",
+    "test/coverage/unit/tc-3-vitest-unit-tests-pass.spec.ts",
+    "out/report.json"
+  ],
   "handoff": {
     "done": [
-      "Wrote the brief's Playwright config",
-      "Ran e2e/app.spec.ts on the QA app: 1 passed, report sent",
-      "Decided nothing: the existing heading test is kept unchanged"
+      "Wrote out/playwright.config.ts exactly as the brief gives it. The earlier copy also set BASE_URL and DB_URL, which the brief config does not",
+      "Ran the existing tests e2e/app.spec.ts and src/App.test.tsx: both pass",
+      "Wrote again the coverage helper and the key tests TC-1, TC-3 and TC-4, which closes the run check's 3 gaps",
+      "TC-1 to TC-5 pass on the head. TC-2 also needs a person's reading",
+      "The added checks TC-6 to TC-12 pass",
+      "Played the walkthrough D-1 once, last, and sent its report and video"
     ],
-    "remaining": ["The QA person reviews the run at the Test run gate"],
-    "decisions": ["Add no test: the heading test already covers the key D-1 behaviour; the rest are one-off build checks"],
-    "uncertain": ["run_id is a placeholder, as the run id was not given"]
+    "remaining": ["The QA person reviews the run at the Test run gate and reads the TC-2 sources"],
+    "decisions": [
+      "Finding, medium, confirmed in code, high confidence: the CI coverage step runs the pull request's own scripts/patch-coverage.mjs while a token that can write commit statuses is in its env (.github/workflows/ci.yml lines 57 and 64). Anyone with push access could post any status, including a passing required check. Who notices: no one, until a forged status passes. Users take this path on every same-repo pull request. Not tested on the running app because the workflow runs only on GitHub",
+      "Finding, low, confirmed by TC-8, high confidence: with npm's legacy peer setting the unit tests cannot load (Cannot find package @testing-library/dom), because package.json does not list it. A developer with that npm setting sees the unit run fail. The default npm ci path works",
+      "Finding, low, confirmed by TC-6, high confidence: the unit run prints a React act warning from the main entry test, whose React root is never unmounted. Developers see it in verbose output only. All tests pass",
+      "Finding, low, confirmed by TC-7, high confidence: npm run test:e2e builds the app again after npm run build, so CI builds twice and the browser step is slower. Results are right",
+      "Finding, low, unconfirmed (read in code, not reachable here): on a fork pull request the coverage status write fails with a read-only token, so the coverage-status job goes red for a reason that is not the code (ci.yml line 68)",
+      "Finding, low, read in code: coverage/lcov.info is written by the pull request's own code, so the coverage/patch status is self-reported. It should not be a required check (ci.yml line 36)",
+      "Finding, low, read in code: the CI actions are pinned to the movable v4 tag next to a statuses write token (ci.yml line 15)",
+      "Finding, low, design or repo gap: the project .gitignore line coverage/ also matches test/coverage/, where the brief puts key tests. This likely explains why the earlier attempt's TC-1, TC-3 and TC-4 did not reach the test branch, and it may drop them again"
+    ],
+    "uncertain": [
+      "Whether the key tests under test/coverage reach the test branch this time, given the coverage/ line in .gitignore. A person may need to add an exception such as !test/coverage/ to .gitignore. That is outside my allowed paths",
+      "Whether the medium security finding on ci.yml line 64 should be fixed in this Deliverable or a new one: the QA person decides",
+      "The run_id field is left out, as the brief gives no run id"
+    ]
   },
-  "suggested_follow_ups": [],
+  "suggested_follow_ups": [
+    "Run scripts/patch-coverage.mjs from the base branch, or keep GH_TOKEN out of its step, in .github/workflows/ci.yml",
+    "Add @testing-library/dom to devDependencies in package.json",
+    "Unmount the React root in the main entry test in src/App.test.tsx",
+    "Let the Playwright web server skip the build when CI has already built, in playwright.config.ts",
+    "Add !test/coverage/ to .gitignore so the coverage tests are kept"
+  ],
   "possible_injection": [],
-  "skipped": []
+  "skipped": [],
+  "skipped_note": "The run skipped nothing. Every designed test TD-1 to TD-5 has a test case that ran. TC-2 also carries a manual check for a person. The CI findings on ci.yml lines 15, 36, 64 and 68 have no Playwright check because the workflow runs only on GitHub. They are graded from the code."
 }

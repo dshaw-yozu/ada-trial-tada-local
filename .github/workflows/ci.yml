@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  statuses: write
 
 jobs:
   test:
@@ -15,19 +14,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: npx tsc -b
       - run: npx vitest run --coverage
       - run: npx playwright test
-      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+
+  coverage-patch:
+    if: github.event_name == 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: coverage
       - name: Report the coverage of the changed lines
-        if: github.event_name == 'pull_request'
         run: node scripts/coverage-patch.mjs "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

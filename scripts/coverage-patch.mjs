@@ -1,6 +1,9 @@
 // Reports the coverage of a pull request's changed lines as the commit status `coverage/patch`.
 // Usage: node scripts/coverage-patch.mjs <base-sha> <head-sha> [lcov-file]
 // With GITHUB_TOKEN and GITHUB_REPOSITORY set it posts the status; otherwise it prints it.
+// The status is informational unless COVERAGE_PATCH_MIN is set: with it, the state is `failure`
+// when the percentage is below that number, and `success` otherwise. Without it, the state is
+// always `success` and the description carries the percentage for a reader to judge.
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -12,7 +15,7 @@ if (!base || !head) {
 }
 
 // Changed lines per file, from the unified diff with no context.
-const diff = execFileSync('git', ['diff', '--unified=0', '--no-color', `${base}...${head}`], {
+const diff = execFileSync('git', ['-c', 'core.quotePath=false', 'diff', '--unified=0', '--no-renames', '--no-color', `${base}...${head}`], {
   encoding: 'utf8',
   maxBuffer: 64 * 1024 * 1024,
 })
@@ -20,7 +23,10 @@ const changed = new Map()
 let file = null
 for (const line of diff.split('\n')) {
   if (line.startsWith('+++ ')) {
-    file = line.startsWith('+++ b/') ? resolve(line.slice(6)) : null
+    // A path with a tab, quote or backslash comes quoted; a path with a space ends in a tab.
+    let path = line.slice(4).replace(/\t$/, '')
+    if (path.startsWith('"')) path = JSON.parse(path)
+    file = path.startsWith('b/') ? resolve(path.slice(2)) : null
   } else if (file && line.startsWith('@@')) {
     const m = /\+(\d+)(?:,(\d+))?/.exec(line)
     const start = Number(m[1])
@@ -62,7 +68,9 @@ const description =
     : `${percent}% of the changed lines run under a test (${covered} of ${total})`
 console.log(`coverage/patch: ${description}`)
 
-const { GITHUB_TOKEN, GITHUB_REPOSITORY } = process.env
+const { GITHUB_TOKEN, GITHUB_REPOSITORY, COVERAGE_PATCH_MIN } = process.env
+const min = COVERAGE_PATCH_MIN ? Number(COVERAGE_PATCH_MIN) : 0
+const state = percent >= min ? 'success' : 'failure'
 if (GITHUB_TOKEN && GITHUB_REPOSITORY) {
   const res = await fetch(`https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${head}`, {
     method: 'POST',
@@ -71,10 +79,14 @@ if (GITHUB_TOKEN && GITHUB_REPOSITORY) {
       Accept: 'application/vnd.github+json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ state: 'success', context: 'coverage/patch', description }),
+    body: JSON.stringify({ state, context: 'coverage/patch', description }),
   })
-  if (!res.ok) {
+  if (res.status === 403) {
+    // A pull request from a fork gets a read-only token: warn, and leave the job's result alone.
+    console.warn('::warning::could not post the status: the token is read-only (403)')
+  } else if (!res.ok) {
     console.error(`could not post the status: ${res.status}`)
     process.exit(1)
   }
 }
+if (state === 'failure') process.exit(1)

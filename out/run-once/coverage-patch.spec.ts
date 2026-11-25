@@ -35,6 +35,7 @@ async function coveragePatch(name: string, diff: string) {
 }
 
 test('TC-7 The coverage gate fails a pull request whose changed line no test runs', {
+  tag: ['@R-14', '@AC-1'],
   annotation: [
     { type: 'added', description: 'implied requirement: Build added a CI gate on the coverage of changed lines, COVERAGE_PATCH_MIN 80, which no criterion covers' },
     { type: 'stub', description: 'A fake git prints a fixed diff: the run has no git, and the script reads only its output' },
@@ -47,6 +48,7 @@ test('TC-7 The coverage gate fails a pull request whose changed line no test run
 })
 
 test('TC-8 Without diff prefixes the coverage gate passes a changed line that no test runs', {
+  tag: ['@R-14', '@AC-1'],
   annotation: [
     { type: 'added', description: 'edge: Code review finding on scripts/coverage-patch.mjs line 18, git diff output with no a/ and b/ prefixes, as diff.noprefix gives' },
     { type: 'stub', description: 'A fake git prints the diff that diff.noprefix gives: the run has no git, and the script reads only its output' },

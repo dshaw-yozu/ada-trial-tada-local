@@ -1,6 +1,6 @@
 {
   "schema": "ada.report.v1",
-  "run_id": "2210bb8e-8307-565f-88af-cba5b5a02a5d",
+  "run_id": "acbf85c6-7615-5858-989d-ed44502fec02",
   "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
   "deliverable": {
     "id": "148d0c06-58b8-41b3-804b-6b86de69886c",
@@ -9,50 +9,77 @@
   },
   "stage": "test_run",
   "outcome": "completed",
-  "plan": "Judge which tests earn a lasting place for D-1, name the blast radius, run each named file through the config on the QA app, and send the reports and out/regression.json.",
+  "plan": "Write the brief's Playwright config, install packages and Chromium, run the existing e2e test and the Vitest unit tests, run TC-1 to TC-6 from the approved design on the QA app, close the run check's gaps on TC-7 and TC-8 by tagging them with R-14 and AC-1 and running them again, then play the walkthrough once and hand in.",
   "acceptance_criteria": [
     {
       "id": "AC-1",
       "status": "met",
-      "tests": ["e2e/app.spec.ts"]
+      "tests": ["TC-1", "TC-2", "TC-3", "TC-4", "TC-5", "TC-6"]
     }
   ],
   "comments_addressed": [],
   "commands": [
-    { "command": "npm ci", "exit": 0, "when": "before_change" },
-    { "command": "npx playwright install chromium", "exit": 0, "when": "before_change" },
+    { "command": "npm ci", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright install chromium", "exit": 0, "when": "after_change" },
+    { "command": "curl -sS -o /dev/null -w %{http_code} $HEAD_URL/ (ad hoc: 200, page holds an empty root div and the bundle /assets/index-Dlz99EAX.js)", "exit": 0, "when": "after_change" },
     { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "ada send out/playwright-report.json", "exit": 0, "when": "after_change" },
-    { "command": "ada send out/regression.json", "exit": 0, "when": "after_change" }
+    { "command": "npm test (ad hoc: Vitest, 1 file, 1 test passed)", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/app-builds.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/unit/vitest-runs.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/playwright-runs.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/build-type-error.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/vitest-failing-test.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/vitest-excludes-browser-tests.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/coverage-patch.spec.ts --project=head", "exit": 0, "when": "after_change" },
+    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/walkthrough/d-1.spec.ts --project=head", "exit": 0, "when": "after_change" }
   ],
   "files_changed": [
     "out/playwright.config.ts",
-    "out/regression.json",
+    "out/run-once/coverage-patch.spec.ts",
     "out/report.json"
   ],
-  "diff_lines": 0,
+  "diff_lines": 170,
   "handoff": {
     "done": [
-      "Wrote out/playwright.config.ts as the brief gives it.",
-      "e2e/app.spec.ts passes through the config: 1 of 1 tests; report sent.",
-      "out/regression.json sent with decision nothing."
+      "Rewrote out/playwright.config.ts exactly as the brief gives it: the copy in the work folder had two extra lines setting BASE_URL and DB_URL.",
+      "Existing e2e/app.spec.ts passes on the head; npm test runs 1 Vitest test and passes.",
+      "TC-1, TC-2 and TC-3, the key tests in test/coverage/, pass on the head; each report sent.",
+      "TC-4, TC-5 and TC-6 pass on the head; each report sent.",
+      "Closed the run check's 6 gaps: TC-7 and TC-8 are now tagged R-14 and AC-1, and pass; report sent.",
+      "Walkthrough D-1 played once on the head with mark AC-1 TC-1; report and video sent."
     ],
     "remaining": [
       "The QA person reviews the run at the Test run gate."
     ],
     "decisions": [
-      "Decision nothing: the project has one end-to-end test, which already covers the built page. The QA runner's tests cover the harness checks."
+      "Low, confirmed, high confidence: with git's diff.noprefix set, the coverage gate scores a changed line that no test runs as 100 percent and passes (TC-8, against TC-7 which fails the same change). Who notices: a developer running the script on their own machine; CI's default git config is not affected.",
+      "Medium, unconfirmed, medium confidence: the CI coverage gate takes changed lines from base...head but coverage from the merge ref that checkout builds on a pull request, so it can score the wrong lines when main has changed the same file. Graded from .github/workflows/ci.yml line 49, not run: no GitHub Actions run is reachable here.",
+      "Low, confirmed by reading: the CI actions are pinned by tags, not commit SHAs, while the coverage-patch job holds statuses write.",
+      "Low, explained: the work folder's out/playwright.config.ts did not match the brief; I replaced it with the brief's text before any test.",
+      "TC-7 and TC-8 tagged R-14 and AC-1: the coverage gate runs Vitest with coverage, the unit harness of R-14. Both are annotated stub, as a fake git prints the diff, so neither counts toward AC-1's status.",
+      "No changed interface with callers: the repository is new, so callers is empty."
     ],
     "uncertain": [
-      "The run id is the brief's id; the earlier out/report.json held another id. Ada's record settles it."
-    ]
+      "Whether the CI coverage gate's merge-ref mismatch (medium) should be fixed in this Deliverable or a follow-up: the QA person decides.",
+      "Whether R-14 is the right Requirement for TC-7 and TC-8, the added coverage-gate checks; the QA person can retag them."
+    ],
+    "note": "The QA app is a static build with no database, so no stored state was read. Playwright wrote test-results at the repository root, which .gitignore excludes. out/regression.json from the regression step was left as it was."
   },
-  "suggested_follow_ups": [],
+  "suggested_follow_ups": [
+    "Pass --src-prefix=a/ --dst-prefix=b/ to the git diff call in scripts/coverage-patch.mjs, or parse paths without relying on the prefix.",
+    "Check out the pull request head sha in the CI test job, or diff against the merge ref, so the coverage gate's line numbers and lcov match.",
+    "Pin the GitHub Actions in .github/workflows/ci.yml to full commit SHAs."
+  ],
   "possible_injection": [],
   "skipped": [
     {
-      "item": "Adding a new test",
-      "reason": "e2e/app.spec.ts already proves the built page renders; a second test would repeat it."
+      "item": "Code review finding on .github/workflows/ci.yml line 49, the merge ref against head sha mismatch",
+      "reason": "It shows only in a GitHub Actions pull request run, which the QA environment cannot run; graded from the workflow's code."
+    },
+    {
+      "item": "Code review finding on .github/workflows/ci.yml line 40, actions pinned by tags",
+      "reason": "A supply-chain point in configuration with no behaviour a test can reach; confirmed by reading the workflow."
     }
-  ]
+  ],
+  "callers": []
 }

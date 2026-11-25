@@ -1,6 +1,6 @@
 {
   "schema": "ada.report.v1",
-  "run_id": "58e84499-d1f8-58bc-acbf-19e4ef470815",
+  "run_id": "2210bb8e-8307-565f-88af-cba5b5a02a5d",
   "project_id": "624cd50f-2f77-49be-a673-4bd0657501fe",
   "deliverable": {
     "id": "148d0c06-58b8-41b3-804b-6b86de69886c",
@@ -9,121 +9,50 @@
   },
   "stage": "test_run",
   "outcome": "completed",
-  "plan": "Run the existing tests of the new repository (e2e/app.spec.ts and src/App.test.tsx), then TC-1 to TC-6 from the approved design on the head: the build and the React-drawn page in the QA app, the Vitest and Playwright harnesses, and the three negative checks in throwaway copies. Then add checks for the Code review findings on the coverage gate that a developer can see, and play the walkthrough drive last.",
+  "plan": "Judge which tests earn a lasting place for D-1, name the blast radius, run each named file through the config on the QA app, and send the reports and out/regression.json.",
   "acceptance_criteria": [
     {
       "id": "AC-1",
       "status": "met",
-      "tests": ["TC-1", "TC-2", "TC-3", "TC-4", "TC-5", "TC-6"]
+      "tests": ["e2e/app.spec.ts"]
     }
   ],
   "comments_addressed": [],
   "commands": [
-    { "command": "npm ci", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright install chromium", "exit": 0, "when": "after_change" },
+    { "command": "npm ci", "exit": 0, "when": "before_change" },
+    { "command": "npx playwright install chromium", "exit": 0, "when": "before_change" },
     { "command": "npx playwright test --config=out/playwright.config.ts e2e/app.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx vitest run (ad hoc: 1 file, 1 test passed)", "exit": 0, "when": "after_change" },
-    { "command": "npm run build -- --outDir /tmp/adhoc-dist --emptyOutDir (ad hoc: built assets/index-Dlz99EAX.js, the bundle the QA app serves)", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/app-builds.spec.ts --project=head (first version: the request fixture timed out on the environment's proxy, ETIMEDOUT, both tries; the test was changed to read the page through the browser)", "exit": 1, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/app-builds.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/unit/vitest-runs.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts test/coverage/browser/playwright-runs.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/build-type-error.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/vitest-failing-test.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/vitest-excludes-browser-tests.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/coverage-patch.spec.ts --project=head", "exit": 0, "when": "after_change" },
-    { "command": "npx vitest run --coverage --coverage.reportsDirectory=out/tmp-cov (ad hoc: lcov holds SF:src/App.tsx, a path relative to the repository root, which coverage-patch.mjs resolves from the root)", "exit": 0, "when": "after_change" },
-    { "command": "npx playwright test --config=out/playwright.config.ts out/run-once/walkthrough/d-1.spec.ts --project=head", "exit": 0, "when": "after_change" }
+    { "command": "ada send out/playwright-report.json", "exit": 0, "when": "after_change" },
+    { "command": "ada send out/regression.json", "exit": 0, "when": "after_change" }
   ],
   "files_changed": [
     "out/playwright.config.ts",
-    "test/coverage/support/run.ts",
-    "test/coverage/browser/app-builds.spec.ts",
-    "test/coverage/browser/playwright-runs.spec.ts",
-    "test/coverage/unit/vitest-runs.spec.ts",
-    "out/run-once/support/copy.ts",
-    "out/run-once/build-type-error.spec.ts",
-    "out/run-once/vitest-failing-test.spec.ts",
-    "out/run-once/vitest-excludes-browser-tests.spec.ts",
-    "out/run-once/coverage-patch.spec.ts",
-    "out/run-once/walkthrough/d-1.spec.ts",
+    "out/regression.json",
     "out/report.json"
   ],
-  "diff_lines": 430,
+  "diff_lines": 0,
   "handoff": {
     "done": [
-      "Existing tests pass on the head: e2e/app.spec.ts (the built app renders its heading) and src/App.test.tsx under Vitest. No existing test was changed.",
-      "TC-1 passes: npm run build ends with success and makes assets/index-Dlz99EAX.js, the bundle the QA app serves; the served page has an empty root, and React draws the heading Ada trial into it at desktop and mobile widths, with no console error.",
-      "TC-2 passes: npm test runs one Vitest unit test, App renders the heading, which passes, and ends with success.",
-      "TC-3 passes: Playwright runs the browser test in e2e/ against the QA app in Chromium; it passes and the run ends with success.",
-      "TC-4 passes: in a throwaway copy, 42 given to a text value makes the build fail with error TS2322 in src/App.tsx and no bundle; the untouched copy builds.",
-      "TC-5 passes: in a throwaway copy, a test expecting 5 for 2 plus 2 makes npm test fail and name src/sum.test.ts > sum > adds 2 and 2.",
-      "TC-6 passes: npm test runs only src/App.test.tsx; no browser test from e2e/, test/coverage/ or out/run-once/ is listed or run.",
-      "Added TC-7 and TC-8 on the coverage gate, both stubbed with a fake git: TC-7 shows the gate fails a changed line no test runs; TC-8 proves Code review's prefix finding.",
-      "Walkthrough D-1 played once on the head; its report and video sent."
+      "Wrote out/playwright.config.ts as the brief gives it.",
+      "e2e/app.spec.ts passes through the config: 1 of 1 tests; report sent.",
+      "out/regression.json sent with decision nothing."
     ],
     "remaining": [
       "The QA person reviews the run at the Test run gate."
     ],
     "decisions": [
-      "Low, confirmed, high confidence: with git diff output that has no a/ and b/ prefixes, as diff.noprefix gives, scripts/coverage-patch.mjs scores a changed line that no test runs as 100 percent and passes the gate. Who notices: a developer running the script locally with that git setting. What they see: a false pass. Not on CI's path, where git's default prefixes apply. Proved by TC-8 against the control TC-7, and read in the code at line 29. Code review's open finding, outside AC-1.",
-      "Medium, confirmed in code, medium confidence: the CI test job checks out the pull request's merge commit, while coverage-patch diffs base...head, so the coverage line numbers can belong to a different tree than the changed-line numbers. Who notices: a pull request author when main has changed lines above theirs in the same file. What they see: the coverage gate passes or fails on the wrong lines. Confirmed by reading .github/workflows/ci.yml: the test job's checkout has no ref. Not run: it needs a GitHub pull request event. Code review's open finding, outside AC-1.",
-      "Low, confirmed in code: the workflow pins actions by mutable tags while the coverage-patch job holds statuses: write. No check was added: it is a configuration audit with no running consequence. Code review's open finding.",
-      "Environment, explained away, not a defect: Playwright's request fixture cannot reach the QA host because it ignores the environment's HTTPS proxy and connects directly (ETIMEDOUT). The browser uses the proxy, so the tests read the served page from the browser's response to page.goto.",
-      "The coverage tests that run commands (TC-1, TC-2, TC-3) build and test the repository at the tested commit in the work folder and check the result in the QA app. TC-1 ties the two by the bundle's content hash."
+      "Decision nothing: the project has one end-to-end test, which already covers the built page. The QA runner's tests cover the harness checks."
     ],
     "uncertain": [
-      "Whether Code review's merge-ref finding (medium) should be fixed in this Deliverable: it lies outside AC-1, and only a GitHub pull request run can show it. The QA person decides.",
-      "TC-7 and TC-8 are stubbed (a fake git prints the diff), so they prove the script's parsing, not git itself. They count for no criterion.",
-      "The run id was not in the brief or the environment, so the report gives the brief's id as run_id. Ada's record of the run settles it.",
-      "Playwright wrote its results folder, with the walkthrough video, to test-results/ at the repository root, outside out/: the brief's config sets no outputDir. The folder is in .gitignore, so it is never committed."
-    ],
-    "note": "AC-1 is met by TC-1 to TC-6, all passing on the head at 7d083fbbf227acf6956b0cd68105f46d2e086b1b. No defect was found. The three Code review findings concern the CI coverage gate, which AC-1 does not cover; they stay open as findings."
+      "The run id is the brief's id; the earlier out/report.json held another id. Ada's record settles it."
+    ]
   },
-  "suggested_follow_ups": [
-    "In scripts/coverage-patch.mjs, pass --src-prefix=a/ --dst-prefix=b/ (or --no-prefix and parse accordingly) to git diff, so local git settings cannot make the gate report 100 percent.",
-    "In .github/workflows/ci.yml, check out github.event.pull_request.head.sha in the test job, or diff against the merge commit, so the lcov lines and the changed lines come from the same tree.",
-    "Pin the workflow's actions to full commit SHAs."
-  ],
+  "suggested_follow_ups": [],
   "possible_injection": [],
   "skipped": [
     {
-      "item": "A running check of Code review's merge-ref finding, .github/workflows/ci.yml line 49",
-      "reason": "It needs a GitHub pull request event whose merge ref differs from its head; the QA environment runs no GitHub Actions. Confirmed by reading the workflow instead."
-    },
-    {
-      "item": "A check of Code review's tag-pinning finding, .github/workflows/ci.yml line 40",
-      "reason": "A configuration audit with no behaviour a user or the system can see on the running app."
-    }
-  ],
-  "callers": [
-    {
-      "caller": "dshaw-yozu/ada-trial-tada-local, .github/workflows/ci.yml line 23",
-      "interface": "npm run build",
-      "grade": "no_impact",
-      "checked": "read_in_code",
-      "detail": "CI runs the build script before the browser tests; TC-1 runs the same command and it ends with success."
-    },
-    {
-      "caller": "dshaw-yozu/ada-trial-tada-local, .github/workflows/ci.yml line 25",
-      "interface": "npx vitest run --coverage, writing coverage/lcov.info",
-      "grade": "no_impact",
-      "checked": "read_in_code",
-      "detail": "Uploads coverage/lcov.info for the coverage-patch job; an ad hoc run shows lcov paths relative to the root, such as SF:src/App.tsx, which the script resolves from the root."
-    },
-    {
-      "caller": "dshaw-yozu/ada-trial-tada-local, .github/workflows/ci.yml line 26",
-      "interface": "npx playwright test with playwright.config.ts",
-      "grade": "no_impact",
-      "checked": "read_in_code",
-      "detail": "With CI set, the config's web server runs npm run preview on port 4173 without a build, after the build step at line 23; TC-3 runs the same e2e/ tests against the QA app and they pass."
-    },
-    {
-      "caller": "dshaw-yozu/ada-trial-tada-local, .github/workflows/ci.yml line 49",
-      "interface": "node scripts/coverage-patch.mjs <base-sha> <head-sha>",
-      "grade": "degraded",
-      "checked": "read_in_code",
-      "detail": "Passes the pull request's base and head SHAs, but the lcov comes from the merge commit's checkout, so the line numbers can disagree: Code review's open finding."
+      "item": "Adding a new test",
+      "reason": "e2e/app.spec.ts already proves the built page renders; a second test would repeat it."
     }
   ]
 }

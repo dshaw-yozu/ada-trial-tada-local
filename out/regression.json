@@ -1,0 +1,20 @@
+{
+  "schema": "ada.regression.v1",
+  "decision": "nothing",
+  "reason": "No new test earns a place. The existing e2e/app.spec.ts already checks the built app renders its heading, and passes on the QA app.",
+  "tests": [
+    {
+      "path": "e2e/app.spec.ts",
+      "title": "the built app renders its heading",
+      "change": "kept",
+      "tags": [],
+      "reason": "It proves the built React page renders, the key behaviour of AC-1. The QA runner's tests cover build and harness checks."
+    }
+  ],
+  "blast_radius": [
+    {
+      "path": "e2e/app.spec.ts",
+      "reason": "The only project end-to-end file. It tests the page that the change adds."
+    }
+  ]
+}
